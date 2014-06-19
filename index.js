@@ -34,7 +34,11 @@ module.exports = function StreamBuffer(opts) {
 	opts = opts || {};
 	opts.autoFlush = opts.autoFlush || true;
 	opts.encoding = opts.encoding || 'utf8';
-	opts.decodeStrings = false;
+
+	// Prevent decodeStrings from being set to false (the default is true).
+	// This prevents buffers from being decoded into strings and forces strings to be encoded
+	// into buffers before being passed to `#_write`.
+	opts.decodeStrings = true;
 
 	var buffer = new CircularBuffer(opts);
 
@@ -56,7 +60,8 @@ module.exports = function StreamBuffer(opts) {
 
 
 	function _write(chunk, encoding, callback) {
-		assert(encoding === 'buffer');
+		assert(chunk instanceof Buffer);
+		assert(encoding === 'buffer', 'Expected encoding to be "buffer", received ' + encoding);
 		if (opts.autoFlush && chunk.length + buffer.length >= buffer.size) self.flush();
 		buffer.write(chunk);
 		process.nextTick(callback);
