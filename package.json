@@ -1,6 +1,6 @@
 {
   "name": "stream-buffer",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "A streaming buffer for Node.js",
   "main": "index.js",
   "scripts": {

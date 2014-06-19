@@ -16,6 +16,7 @@
 
 /// StreamBuffer
 /// ==================================================
+/// TODO: document
 
 
 'use strict';
@@ -28,6 +29,7 @@ var CircularBuffer = require('circular-buffer');
 
 /// new StreamBuffer([options])
 /// --------------------------------------------------
+/// TODO: document
 
 module.exports = function StreamBuffer(opts) {
 
@@ -74,10 +76,18 @@ module.exports = function StreamBuffer(opts) {
 	this.setEncoding = setEncoding;
 
 
+	/// StreamBuffer#flush()
+	/// --------------------------------------------------
+	/// TODO: document
+
 	function flush() {
 		self.push(buffer.read('buffer'), opts.encoding);
 	}
 
+
+	/// StreamBuffer#setEncoding(encoding)
+	/// --------------------------------------------------
+	/// TODO: document
 
 	function setEncoding(encoding) {
 		// Recode the buffer to the new encoding
