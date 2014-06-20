@@ -35,16 +35,29 @@ module.exports = function StreamBuffer(opts) {
 
 	opts = opts || {};
 	opts.autoFlush = opts.autoFlush || true;
-	opts.encoding = opts.encoding || 'utf8';
+	opts.encoding = opts.encoding || 'buffer';
 
-	// Prevent decodeStrings from being set to false (the default is true).
-	// This prevents buffers from being decoded into strings and forces strings to be encoded
-	// into buffers before being passed to `#_write`.
 	opts.decodeStrings = true;
+	opts.objectMode = false;
+
+	validateEncoding(opts.encoding, true);
 
 	var buffer = new CircularBuffer(opts);
 
 	var self = this;
+
+
+	// validateEncoding(encoding, [allowBuffer])
+	// --------------------------------------------------
+	// Returns `true` if `encoding` is a known encoding. Otherwise throws a TypeError, like when
+	// the Buffer class sees an unknown encoding. If `allowBuffer` is `true` then the string
+	// `"buffer"` is allowed as an encoding.
+
+	function validateEncoding(encoding, allowBuffer) {
+		if (Buffer.isEncoding(encoding)) return true;
+		if (allowBuffer && encoding === 'buffer') return true;
+		throw new TypeError('Unknown encoding: ' + encoding);
+	}
 
 
 	// Stream Interface //
@@ -63,7 +76,7 @@ module.exports = function StreamBuffer(opts) {
 
 	function _write(chunk, encoding, callback) {
 		assert(chunk instanceof Buffer);
-		assert(encoding === 'buffer', 'Expected encoding to be "buffer", received ' + encoding);
+		assert(encoding === 'buffer', 'Expected encoding to be "buffer", received: ' + encoding);
 		if (opts.autoFlush && chunk.length + buffer.length >= buffer.size) self.flush();
 		buffer.write(chunk);
 		process.nextTick(callback);
@@ -90,10 +103,12 @@ module.exports = function StreamBuffer(opts) {
 	/// TODO: document
 
 	function setEncoding(encoding) {
+		validateEncoding(encoding);
+
 		// Recode the buffer to the new encoding
 		opts.encoding = encoding;
 		var newBuffer = new CircularBuffer(opts);
-		newBuffer.write(buffer.read());
+		if (buffer.length > 0) newBuffer.write(buffer.read());
 		buffer = newBuffer;
 
 		return DuplexStream.setEncoding.call(self, encoding);
